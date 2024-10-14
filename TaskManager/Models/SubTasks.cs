@@ -12,4 +12,5 @@ public class SubTasks: BaseModel
 
     public Users User { get; set; }
     public Tasks Task { get; set; }
+    public  ICollection<UserSubTask> UserSubTasks { get; set; }
 }

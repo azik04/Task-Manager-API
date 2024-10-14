@@ -6,24 +6,24 @@ namespace TaskManager.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserTaskController : ControllerBase
+public class UserSubTaskController : ControllerBase
 {
-    private readonly IUserTaskService _service;
+    private readonly IUserSubTaskService _service;
 
-    public UserTaskController(IUserTaskService service)
+    public UserSubTaskController(IUserSubTaskService service)
     {
         _service = service;
     }
-    [HttpPost("{taskId}/users/{userId}")]
+    [HttpPost("{subTaskId}/users/{userId}")]
     [Authorize(Policy = "User")]
 
-    public async Task<IActionResult> AddUserToTask(long taskId, long userId)
+    public async Task<IActionResult> AddUserToSubTask(long subTaskId, long userId)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var result = await _service.AddUsersToTask(taskId, userId);
+        var result = await _service.AddUsersToSubTask(subTaskId, userId);
         if (result)
             return Ok("User added to task.");
         return BadRequest("Failed to add user to task.");
@@ -32,9 +32,9 @@ public class UserTaskController : ControllerBase
     [HttpDelete("{taskId}/users/{userId}")]
     [Authorize(Policy = "User")]
 
-    public async Task<IActionResult> RemoveUserFromTask(long taskId, long userId)
+    public async Task<IActionResult> RemoveUserFromSubTask(long subTaskId, long userId)
     {
-        var result = await _service.RemoveUserFromTask(taskId, userId);
+        var result = await _service.RemoveUserFromSubTask(subTaskId, userId);
         if (result)
             return Ok("User removed from task.");
         return BadRequest("Failed to remove user from task.");
@@ -43,17 +43,17 @@ public class UserTaskController : ControllerBase
     [HttpGet("{taskId}/users")]
     [Authorize(Policy = "User")]
 
-    public async Task<IActionResult> GetUsersByTaskId(long taskId)
+    public async Task<IActionResult> GetUsersBySubTaskId(long subTaskId)
     {
-        var users = await _service.GetUsersByTaskId(taskId);
+        var users = await _service.GetUsersBySubTaskkId(subTaskId);
         return Ok(users);
     }
     [HttpGet("{userId}/theme")]
     [Authorize(Policy = "User")]
 
-    public async Task<IActionResult> GetTaskByUserId(long userId)
+    public async Task<IActionResult> GetSubTaskByUserId(long userId)
     {
-        var users = await _service.GetTaskByUserId(userId);
+        var users = await _service.GetSubTaskByUserId(userId);
         return Ok(users);
     }
 }

@@ -15,4 +15,5 @@ public class Users : BaseModel
     public virtual ICollection<Comments> Comment { get; set; }
     public virtual ICollection<Themes> Themes { get; set; }
     public virtual ICollection<SubTasks> CoTasks { get; set; }
+    public virtual ICollection<UserSubTask> UserSubTasks { get; set; }
 }

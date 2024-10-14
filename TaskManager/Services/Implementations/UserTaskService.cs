@@ -15,18 +15,18 @@ namespace TaskManager.Services.Implementations
             _db = db;
             _mailService = mailService;
         }
-        public async Task<bool> AddUsersToTask(long themeId, long userId)
+        public async Task<bool> AddUsersToTask(long taskId, long userId)
         {
             try
             {
-                var task = await _db.Tasks.FindAsync(themeId);
+                var task = await _db.Tasks.FindAsync(taskId);
                 var user = await _db.Users.FindAsync(userId);
 
                 if (task == null || user == null)
                     return false;
 
                 var existingUserTask = await _db.UserTasks
-                    .FirstOrDefaultAsync(ut => ut.TaskId == themeId && ut.UserId == userId);
+                    .FirstOrDefaultAsync(ut => ut.TaskId == taskId && ut.UserId == userId);
 
                 if (existingUserTask != null)
                 {
@@ -46,7 +46,7 @@ namespace TaskManager.Services.Implementations
 
                 var userTask = new UserTasks
                 {
-                    TaskId = themeId,
+                    TaskId = taskId,
                     UserId = userId,
                     CreateAt = DateTime.Now,
                     IsDeleted = false 
@@ -92,14 +92,15 @@ namespace TaskManager.Services.Implementations
         }
         public async Task<ICollection<Tasks>> GetTaskByUserId(long userId)
         {
-            var themes = await _db.UserTasks
+            var tasks = await _db.UserTasks
                 .Where(ut => ut.UserId == userId && !ut.IsDeleted)
                 .Include(ut => ut.Task)
                 .Select(ut => ut.Task)
                 .Distinct()
                 .ToListAsync();
 
-            return themes;
+            return tasks;
         }
+
     }
 }
