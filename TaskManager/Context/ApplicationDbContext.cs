@@ -30,7 +30,7 @@ public class ApplicationDbContext : DbContext
         // Define Theme-User relationships via UserTheme
         modelBuilder.Entity<UserThemes>(entity =>
         {
-            entity.HasKey(ut => new { ut.UserId, ut.ThemeId });
+            entity.HasKey(ut =>  ut.Id );
             entity.HasOne(ut => ut.User)
                 .WithMany(u => u.UserThemes)
                 .HasForeignKey(ut => ut.UserId);
@@ -54,23 +54,24 @@ public class ApplicationDbContext : DbContext
         });
 
         // Tasks relationship
-        modelBuilder.Entity<Tasks>(entity =>
+        modelBuilder.Entity<UserThemes>(entity =>
         {
-            entity.HasKey(t => t.Id);
-            entity.HasOne(t => t.ExecutiveUser)
-                  .WithMany(u => u.Tasks)
-                  .HasForeignKey(t => t.ExecutiveUserId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasKey(ut => ut.Id); 
 
-            entity.HasMany(t => t.UserTasks)
-                  .WithOne(ut => ut.Task)
-                  .HasForeignKey(ut => ut.TaskId);
+            entity.HasOne(ut => ut.Theme)
+                  .WithMany(t => t.UserThemes) 
+                  .HasForeignKey(ut => ut.ThemeId)
+                  .OnDelete(DeleteBehavior.Restrict); 
+
+            entity.HasOne(ut => ut.User)
+                  .WithMany(u => u.UserThemes) 
+                  .HasForeignKey(ut => ut.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // UserTasks relationship (Ensure users are part of the theme’s users)
         modelBuilder.Entity<UserTasks>(entity =>
         {
-            entity.HasKey(ut => new { ut.TaskId, ut.UserId });
+            entity.HasKey(ut => new { ut.Id });
 
             entity.HasOne(ut => ut.Task)
                 .WithMany(t => t.UserTasks)

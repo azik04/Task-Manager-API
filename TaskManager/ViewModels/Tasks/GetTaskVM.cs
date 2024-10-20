@@ -13,5 +13,5 @@ public class GetTaskVM
     public bool IsCompleted { get; set; }
     public bool IsDeleted { get; set; }
     public long ThemeId { get; set; }
-    public long ExecutiveUserId { get; set; }
+    public long? ExecutiveUserId { get; set; }
 }

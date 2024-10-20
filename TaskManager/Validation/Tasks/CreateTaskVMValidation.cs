@@ -26,9 +26,6 @@ public class CreateTaskVMValidator : AbstractValidator<CreateTaskVM>
 
         RuleFor(x => x.DeadLine)
             .NotEmpty().WithMessage("Son tarix tələb olunur.");
-
-        RuleFor(x => x.ExecutiveUserId)
-            .NotEmpty().WithMessage("İcraçı istifadəçi tələb olunur.");
     }
 
     private bool BeAValidDate(string deadLine)

@@ -21,46 +21,49 @@ public class UserTaskService : IUserTaskService
     {
         try
         {
-            var task = await _db.Themes.FirstOrDefaultAsync(x => x.Id == vm.TaskId);
+            var task = await _db.Tasks.FirstOrDefaultAsync(x => x.Id == vm.TaskId);
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == vm.UserId);
 
             if (task == null || user == null)
                 return new BaseResponse<GetUserTaskVM>()
                 {
-                    Description = task == null ? "Theme not found." : "User not found.",
+                    Description = task == null ? "Task not found." : "User not found.",
                     StatusCode = Enum.StatusCode.NotFound
                 };
 
             var existingUserTask = await _db.UserTasks
-                .FirstOrDefaultAsync(ut => ut.TaskId == vm.TaskId && ut.UserId == vm.UserId);
+                .FirstOrDefaultAsync(ut => ut.TaskId == vm.TaskId && ut.UserId == vm.UserId && !ut.IsDeleted);
 
             if (existingUserTask != null)
                 return new BaseResponse<GetUserTaskVM>()
                 {
                     Description = "User already assigned to the task.",
-                    StatusCode = Enum.StatusCode.NotFound
+                    StatusCode = Enum.StatusCode.NotFound 
                 };
 
-            var newUserTask = new UserTasks()
+            var newTask = new UserTasks()
             {
-                TaskId = vm.TaskId,
                 UserId = vm.UserId,
-                CreateAt = DateTime.Now
+                TaskId = vm.TaskId,
+                CreateAt = DateTime.Now,
+                IsDeleted = false
             };
 
-            await _db.UserTasks.AddAsync(newUserTask);
+            await _db.UserTasks.AddAsync(newTask);
             await _db.SaveChangesAsync();
 
-            var result = new GetUserTaskVM()
+
+            var resultVm = new GetUserTaskVM
             {
-                UserId = newUserTask.UserId,
-                TaskId = newUserTask.TaskId,
+                Id = newTask.Id,
+                UserId = newTask.UserId,
+                TaskId = newTask.TaskId,
             };
 
             return new BaseResponse<GetUserTaskVM>()
             {
-                Data = result,
-                Description = "User successfully assigned to the theme.",
+                Data = resultVm,
+                Description = "User successfully assigned to the task.",
                 StatusCode = Enum.StatusCode.OK
             };
         }
@@ -76,41 +79,44 @@ public class UserTaskService : IUserTaskService
 
 
 
+
     public async Task<IBaseResponse<GetUserTaskVM>> RemoveUserFromTask(long id)
     {
         try
         {
-            var userTheme = await _db.UserTasks
-                .FirstOrDefaultAsync(ut => ut.Id == id && !ut.IsDeleted);
+            var userTask = await _db.UserTasks.SingleOrDefaultAsync(ut => ut.Id == id);
 
-            if (userTheme == null)
+            if (userTask == null)
             {
-                return new BaseResponse<GetUserTaskVM>()
+                return new BaseResponse<GetUserTaskVM>
                 {
-                    Description = "UserTheme not found.",
+                    Description = "UserTask not found.",
                     StatusCode = Enum.StatusCode.NotFound
                 };
             }
-            userTheme.IsDeleted = true;
-            _db.UserTasks.Update(userTheme);
+
+            userTask.IsDeleted = true;
+
             await _db.SaveChangesAsync();
 
-            var result = new GetUserTaskVM()
+            var result = new GetUserTaskVM
             {
-                UserId = userTheme.UserId,
-                TaskId = userTheme.TaskId
+                UserId = userTask.UserId,
+                TaskId = userTask.TaskId
             };
 
-            return new BaseResponse<GetUserTaskVM>()
+            return new BaseResponse<GetUserTaskVM>
             {
                 Data = result,
-                Description = "User successfully removed from the task.",
+                Description = $"User : {userTask.UserId} successfully removed from the task : {userTask.TaskId}.",
                 StatusCode = Enum.StatusCode.OK
             };
         }
         catch (Exception ex)
         {
-            return new BaseResponse<GetUserTaskVM>()
+            Console.WriteLine($"Error: {ex.Message}");
+
+            return new BaseResponse<GetUserTaskVM>
             {
                 Description = $"Error: {ex.Message}",
                 StatusCode = Enum.StatusCode.Error

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManager.Context;
 using TaskManager.Services.Interfaces;
 using TaskManager.ViewModels.UserTask;
 
@@ -10,12 +11,18 @@ namespace TaskManager.Controllers;
 public class UserTaskController : ControllerBase
 {
     private readonly IUserTaskService _service;
-
-    public UserTaskController(IUserTaskService service)
+    private readonly ApplicationDbContext _db;
+    public UserTaskController(IUserTaskService service, ApplicationDbContext db)
     {
         _service = service;
+        _db = db;
     }
-
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        var data = _db.UserTasks.ToList();
+        return Ok(data);
+    }
 
     [HttpPost]
     [Authorize(Policy = "User")]

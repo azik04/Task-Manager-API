@@ -8,6 +8,8 @@ public interface IUserService
 {
     public Task<IBaseResponse<GetUserVM>> Register(RegisterVM task);
     public Task<IBaseResponse<string>> LogIn(LogInVM task);
+    public Task<IBaseResponse<ICollection<GetUserVM>>> GetUnassignedUsersForTask(long taskId);
+    public Task<IBaseResponse<ICollection<GetUserVM>>> GetUnassignedUsersForTheme(long themeId, long userId);
     public Task<IBaseResponse<ICollection<GetUserVM>>> GetAll();
     public Task<IBaseResponse<ICollection<GetUserVM>>> GetAllUsers();
     public Task<IBaseResponse<ICollection<GetUserVM>>> GetAllAdmins();

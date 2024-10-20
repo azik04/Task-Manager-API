@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManager.Models;
 using TaskManager.Services.Interfaces;
 using TaskManager.ViewModels.UserTheme;
 
@@ -19,7 +20,7 @@ public class UserThemeController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> AddUserToTask(CreateUserThemeVM vm)
+    public async Task<IActionResult> AddUserToTheme(CreateUserThemeVM vm)
     {
         if (!ModelState.IsValid)
         {
@@ -33,11 +34,11 @@ public class UserThemeController : ControllerBase
     }
 
 
-    [HttpDelete("{id}")]
+    [HttpDelete("Theme/{themeId}/User/{userId}")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> RemoveUserFromTheme(long id)
+    public async Task<IActionResult> RemoveUserFromTheme(long themeId, long userId)
     {
-        var result = await _service.RemoveUserFromTheme(id);
+        var result = await _service.RemoveUserFromTheme(themeId, userId);
         if (result.StatusCode == Enum.StatusCode.OK)
             return Ok(result);
         return BadRequest(result);
@@ -47,7 +48,7 @@ public class UserThemeController : ControllerBase
     [HttpGet("Theme/{themeId}/Users")]
     [Authorize(Policy = "User")]
     public async Task<IActionResult> GetUsersByThemeId(long themeId)
-    {
+        {
         var users = await _service.GetUsersByThemeId(themeId);
         if (users.StatusCode == Enum.StatusCode.OK)
             return Ok(users);

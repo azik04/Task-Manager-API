@@ -12,7 +12,7 @@ public class Tasks : BaseModel
     public long ThemeId { get; set; }
     public DateTime DateOfCompletion { get; set; }
     public bool IsCompleted { get; set; }
-    public long ExecutiveUserId { get; set; }
+    public long? ExecutiveUserId { get; set; }
 
     public virtual Users ExecutiveUser { get; set; }
     public virtual Themes Theme { get; set; }

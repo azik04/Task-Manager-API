@@ -7,7 +7,7 @@ namespace TaskManager.Services.Interfaces;
 public interface IUserThemeService
 {
     Task<IBaseResponse<GetUserThemeVM>> AddUsersToTheme(CreateUserThemeVM vm);
-    Task<IBaseResponse<GetUserThemeVM>> RemoveUserFromTheme(long id);
+    Task<IBaseResponse<GetUserThemeVM>> RemoveUserFromTheme(long themeId, long userId);
     Task<IBaseResponse<ICollection<Users>>> GetUsersByThemeId(long taskId);
     Task<IBaseResponse<ICollection<Themes>>> GetThemesByUserId(long userId);
 }

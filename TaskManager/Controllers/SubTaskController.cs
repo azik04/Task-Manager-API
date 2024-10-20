@@ -37,9 +37,9 @@ public class SubTaskController : ControllerBase
 
     [HttpGet("Task/{taskId}")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTask(long subTaskId)
+    public async Task<IActionResult> GetByTask(long TaskId)
     {
-        var res = await _service.GetByTask(subTaskId);
+        var res = await _service.GetByTask(TaskId);
         return Ok(res);
 
     }
@@ -69,11 +69,11 @@ public class SubTaskController : ControllerBase
     }
 
 
-    [HttpGet("{subTaskId}/Done")]
+    [HttpGet("Task/{taskId}/Done")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskDone(long subTaskId)
+    public async Task<IActionResult> GetByTaskDone(long taskId)
     {
-        var res = await _service.GetByTaskDone(subTaskId);
+        var res = await _service.GetByTaskDone(taskId);
         if (res.StatusCode == Enum.StatusCode.OK)
             return Ok(res);
 
@@ -81,11 +81,11 @@ public class SubTaskController : ControllerBase
     }
 
 
-    [HttpGet("{subTaskId}/NotDone")]
+    [HttpGet("Task/{taskId}/NotDone")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskNotDone(long subTaskId)
+    public async Task<IActionResult> GetByTaskNotDone(long taskId)
     {
-        var res = await _service.GetByTaskNotDone(subTaskId);
+        var res = await _service.GetByTaskNotDone(taskId);
         if (res.StatusCode == Enum.StatusCode.OK)
             return Ok(res);
 

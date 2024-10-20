@@ -48,7 +48,10 @@ public class UserController : ControllerBase
     public async Task<IActionResult> GetById(long id)
     {
         var res = await _service.GetById(id);
-        return Ok(res);
+        if (res.StatusCode == Enum.StatusCode.OK)
+            return Ok(res);
+
+        return BadRequest(res);
     }
 
 
@@ -58,5 +61,27 @@ public class UserController : ControllerBase
     public async Task<IActionResult> LogOut()
     {
         return Ok("LogOut successfully");
+    }
+
+
+    [HttpGet("Task/{taskId}/Unassigned")]
+    [Authorize(Policy = "User")]
+    public async Task<IActionResult> GetUnassignedUsersForTask(long taskId)
+    {
+        var res = await _service.GetUnassignedUsersForTask(taskId);
+        if (res.StatusCode == Enum.StatusCode.OK)
+            return Ok(res);
+
+        return BadRequest(res);
+    }
+    [HttpGet("Theme/{themeId}/Unassigned")]
+    [Authorize(Policy = "User")]
+    public async Task<IActionResult> GetUnassignedUsersForTheme(long themeId , long userId)
+    {
+        var res = await _service.GetUnassignedUsersForTheme(themeId, userId);
+        if (res.StatusCode == Enum.StatusCode.OK)
+            return Ok(res);
+
+        return BadRequest(res);
     }
 }

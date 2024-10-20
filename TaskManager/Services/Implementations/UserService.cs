@@ -182,6 +182,109 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<IBaseResponse<ICollection<GetUserVM>>> GetUnassignedUsersForTask(long taskId)
+    {
+        try
+        {
+            var taskAssignedUsers = await _db.UserTasks
+                .Where(ut => ut.TaskId == taskId && !ut.IsDeleted)
+                .Select(ut => ut.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var themeId = await _db.Tasks
+                .Where(t => t.Id == taskId)
+                .Select(t => t.ThemeId)
+                .FirstOrDefaultAsync();
+
+            var themeAssignedUsers = await _db.UserThemes
+                .Where(ut => ut.ThemeId == themeId && !ut.IsDeleted)
+                .Select(ut => ut.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var allAssignedUsers = taskAssignedUsers.Union(themeAssignedUsers).Distinct().ToList();
+
+            var data = await _db.Users
+                .Where(x => !x.IsDeleted && !allAssignedUsers.Contains(x.Id))
+                .ToListAsync();
+
+            Log.Information("Незанятые пользователи для задачи {TaskId} успешно извлечены", taskId);
+
+            var usersVM = data.Select(item => new GetUserVM
+            {
+                Id = item.Id,
+                Email = item.Email,
+                UserName = item.UserName,
+                Role = item.Role,
+            }).ToList();
+
+            return new BaseResponse<ICollection<GetUserVM>>
+            {
+                Data = usersVM,
+                Description = $"Пользователи успешно извлечены для задачи {taskId}",
+                StatusCode = Enum.StatusCode.OK
+            };
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Произошла ошибка при извлечении незанятых пользователей для задачи {TaskId}: {Message}", taskId, ex.Message);
+            return new BaseResponse<ICollection<GetUserVM>>
+            {
+                Description = ex.Message,
+                StatusCode = Enum.StatusCode.Error
+            };
+        }
+    }
+
+
+
+    public async Task<IBaseResponse<ICollection<GetUserVM>>> GetUnassignedUsersForTheme(long themeId, long userId)
+    {
+        try
+        {
+            var themeAssignedUsers = await _db.UserThemes
+                .Where(ut => ut.ThemeId == themeId && !ut.IsDeleted)
+                .Select(ut => ut.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var data = await _db.Users
+                .Where(x => !x.IsDeleted && !themeAssignedUsers.Contains(x.Id) && x.Id != userId)
+                .ToListAsync();
+
+            Log.Information($"Unassigned users for theme {themeId} retrieved successfully");
+
+            var usersVM = data.Select(item => new GetUserVM
+            {
+                Id = item.Id,
+                Email = item.Email,
+                Password = item.Password,
+                UserName = item.UserName,
+                Role = item.Role,
+            }).ToList();
+
+            return new BaseResponse<ICollection<GetUserVM>>
+            {
+                Data = usersVM,
+                Description = $"Users successfully retrieved for theme {themeId}",
+                StatusCode = Enum.StatusCode.OK
+            };
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error occurred while retrieving unassigned users for theme {ThemeId}: {Message}", themeId, ex.Message);
+            return new BaseResponse<ICollection<GetUserVM>>
+            {
+                Description = ex.Message,
+                StatusCode = Enum.StatusCode.Error
+            };
+        }
+    }
+
+
+
+
     public async Task<IBaseResponse<ICollection<GetUserVM>>> GetAllAdmins()
     {
         try

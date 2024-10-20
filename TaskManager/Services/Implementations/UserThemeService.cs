@@ -19,58 +19,62 @@ public class UserThemeService : IUserThemeService
     {
         try
         {
-            var theme = await _db.Themes.FirstOrDefaultAsync(x => x.Id == vm.ThemeId);
-            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == vm.UserId);
+            var theme = await _db.Themes.FindAsync(vm.ThemeId);
+            var user = await _db.Users.FindAsync(vm.UserId);
 
             if (theme == null || user == null)
-                return new BaseResponse<GetUserThemeVM>()
+                return new BaseResponse<GetUserThemeVM>
                 {
                     Description = theme == null ? "Theme not found." : "User not found.",
                     StatusCode = Enum.StatusCode.NotFound
                 };
 
             var existingUserTheme = await _db.UserThemes
-                .FirstOrDefaultAsync(ut => ut.ThemeId == vm.ThemeId && ut.UserId == vm.UserId);
+                .AnyAsync(ut => ut.ThemeId == vm.ThemeId && ut.UserId == vm.UserId && !ut.IsDeleted);
 
-            if (existingUserTheme != null)
-                return new BaseResponse<GetUserThemeVM>()
+            if (existingUserTheme)
+                return new BaseResponse<GetUserThemeVM>
                 {
                     Description = "User already assigned to the theme.",
-                    StatusCode = Enum.StatusCode.NotFound
+                    StatusCode = Enum.StatusCode.NotFound // Use Conflict for duplicate entries
                 };
 
-            var newUserTheme = new UserThemes()
+            var newUserTheme = new UserThemes
             {
                 ThemeId = vm.ThemeId,
                 UserId = vm.UserId,
-                CreateAt = DateTime.Now
+                CreatedByUserId = vm.CreatedByUserId,
+                CreateAt = DateTime.Now // Use UTC for consistency
             };
 
             await _db.UserThemes.AddAsync(newUserTheme);
             await _db.SaveChangesAsync();
 
-            var result = new GetUserThemeVM()
+            var result = new GetUserThemeVM
             {
                 UserId = newUserTheme.UserId,
                 ThemeId = newUserTheme.ThemeId,
+                Id = newUserTheme.Id,
+                CreatedByUserId = vm.CreatedByUserId,
             };
 
-            return new BaseResponse<GetUserThemeVM>()
+            return new BaseResponse<GetUserThemeVM>
             {
                 Data = result,
-                Description = "User successfully assigned to the theme.",
+                Description = "User successfully added to the theme.",
                 StatusCode = Enum.StatusCode.OK
             };
         }
         catch (Exception ex)
         {
-            return new BaseResponse<GetUserThemeVM>()
+            return new BaseResponse<GetUserThemeVM>
             {
                 Description = $"Error: {ex.Message}",
                 StatusCode = Enum.StatusCode.Error
             };
         }
     }
+
 
 
     public async Task<IBaseResponse<ICollection<Themes>>> GetThemesByUserId(long userId)
@@ -121,7 +125,7 @@ public class UserThemeService : IUserThemeService
                 .Distinct()
                 .ToListAsync();
 
-            if (!users.Any())
+            if (users == null || !users.Any())
             {
                 return new BaseResponse<ICollection<Users>>()
                 {
@@ -147,12 +151,12 @@ public class UserThemeService : IUserThemeService
         }
     }
 
-    public async Task<IBaseResponse<GetUserThemeVM>> RemoveUserFromTheme(long id)
+    public async Task<IBaseResponse<GetUserThemeVM>> RemoveUserFromTheme(long themeId, long userId)
     {
         try
         {
             var userTheme = await _db.UserThemes
-                .FirstOrDefaultAsync(ut => ut.Id == id && !ut.IsDeleted);
+                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.ThemeId == themeId  && !ut.IsDeleted);
 
             if (userTheme == null)
             {
@@ -169,7 +173,9 @@ public class UserThemeService : IUserThemeService
             var result = new GetUserThemeVM()
             {
                 UserId = userTheme.UserId,
-                ThemeId = userTheme.ThemeId
+                ThemeId = userTheme.ThemeId,
+                CreatedByUserId = userTheme.CreatedByUserId,
+
             };
 
             return new BaseResponse<GetUserThemeVM>()
