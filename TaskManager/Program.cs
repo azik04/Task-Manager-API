@@ -5,11 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
-using TaskManager.Context;
-using TaskManager.Enum;
-using TaskManager.Services.Implementations;
-using TaskManager.Services.Interfaces;
-
+using TaskManager.Core.Interfaces;
+using TaskManager.Core.Services;
+using TaskManager.DataProvider.Context;
+using TaskManager.DataProvider.Enums;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -83,13 +82,14 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddScoped<IUserTaskService, UserTaskService>();
-builder.Services.AddScoped<IMailService, MailService>();
+//builder.Services.AddScoped<IUserTaskService, UserTaskService>();
+//builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<ISubTaskService, SubTaskService >();
 builder.Services.AddScoped<IUserThemeService, UserThemeService>();
 

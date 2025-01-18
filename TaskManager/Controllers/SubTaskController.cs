@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Context;
-using TaskManager.Services.Interfaces;
-using TaskManager.ViewModels.SubTask;
+using TaskManager.Core.Dto.SubTask;
+using TaskManager.Core.Interfaces;
 
 namespace TaskManager.Controllers;
 
@@ -11,46 +10,64 @@ namespace TaskManager.Controllers;
 public class SubTaskController : ControllerBase
 {
     private readonly ISubTaskService _service;
-    private readonly ApplicationDbContext _db;
-    public SubTaskController(ISubTaskService service, ApplicationDbContext db)
+    public SubTaskController(ISubTaskService service)
     {
-        _db = db;
         _service = service;
     }
 
 
     [HttpPost]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> Create(CreateSubTaskVM subTask)
+    public async Task<IActionResult> Create(CreateSubTaskDto subTask)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
         var res = await _service.Create(subTask);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
     }
 
 
-    [HttpGet("Task/{taskId}")]
+    [HttpGet("Task/{taskId}/NotDone")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTask(long TaskId)
+    public async Task<IActionResult> GetByTaskNotDone(long TaskId)
     {
-        var res = await _service.GetByTask(TaskId);
-        return Ok(res);
+        var res = await _service.GetByTaskNotDone(TaskId);
+        if (res.Success)
+            return Ok(res);
 
+        return BadRequest(res);
     }
 
+    [HttpGet("{id}")]
+    [Authorize(Policy = "User")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var res = await _service.GetById(id);
+        if (res.Success)
+            return Ok(res);
+
+        return BadRequest(res);
+    }
+
+
+    [HttpGet("Task/{taskId}/Done")]
+    [Authorize(Policy = "User")]
+    public async Task<IActionResult> GetByTaskDone(long TaskId)
+    {
+        var res = await _service.GetByTaskDone(TaskId);
+        if (res.Success)
+            return Ok(res);
+
+        return BadRequest(res);
+    }
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "User")]
     public async Task<IActionResult> Remove(long id)
     {
         var res = await _service.Remove(id);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -62,31 +79,20 @@ public class SubTaskController : ControllerBase
     public async Task<IActionResult> Complete(long id)
     {
         var res = await _service.Complete(id);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
     }
 
 
-    [HttpGet("Task/{taskId}/Done")]
+
+    [HttpPut]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskDone(long taskId)
+    public async Task<IActionResult> Update(long taskId , UpdateSubTaskDto dto)
     {
-        var res = await _service.GetByTaskDone(taskId);
-        if (res.StatusCode == Enum.StatusCode.OK)
-            return Ok(res);
-
-        return BadRequest(res);
-    }
-
-
-    [HttpGet("Task/{taskId}/NotDone")]
-    [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskNotDone(long taskId)
-    {
-        var res = await _service.GetByTaskNotDone(taskId);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        var res = await _service.Update(taskId, dto);
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);

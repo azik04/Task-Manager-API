@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Models;
-using TaskManager.Services.Interfaces;
-using TaskManager.ViewModels.UserTheme;
+using TaskManager.Core.Dto.UserTheme;
+using TaskManager.Core.Interfaces;
 
 namespace TaskManager.Controllers;
 
@@ -20,14 +19,10 @@ public class UserThemeController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> AddUserToTheme(CreateUserThemeVM vm)
+    public async Task<IActionResult> AddUserToTheme(CreateUserThemeDto vm)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        var result = await _service.AddUsersToTheme(vm);
-        if (result.StatusCode == Enum.StatusCode.OK)
+        var result = await _service.CreateAsync(vm);
+        if (result.Success)
             return Ok(result);
 
         return BadRequest(result);
@@ -36,11 +31,12 @@ public class UserThemeController : ControllerBase
 
     [HttpDelete("Theme/{themeId}/User/{userId}")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> RemoveUserFromTheme(long themeId, long userId)
+    public async Task<IActionResult> RemoveUserFromTheme(long id)
     {
-        var result = await _service.RemoveUserFromTheme(themeId, userId);
-        if (result.StatusCode == Enum.StatusCode.OK)
+        var result = await _service.RemoveAsync(id);
+        if (result.Success)
             return Ok(result);
+
         return BadRequest(result);
     }
 
@@ -49,10 +45,11 @@ public class UserThemeController : ControllerBase
     [Authorize(Policy = "User")]
     public async Task<IActionResult> GetUsersByThemeId(long themeId)
         {
-        var users = await _service.GetUsersByThemeId(themeId);
-        if (users.StatusCode == Enum.StatusCode.OK)
-            return Ok(users);
-        return BadRequest(users);
+        var result = await _service.GetUsersAsync(themeId);
+        if (result.Success)
+            return Ok(result);
+
+        return BadRequest(result);
     }
 
 
@@ -60,9 +57,10 @@ public class UserThemeController : ControllerBase
     [Authorize(Policy = "User")]
     public async Task<IActionResult> GetThemesByUserId(long userId)
     {
-        var users = await _service.GetThemesByUserId(userId);
-        if (users.StatusCode == Enum.StatusCode.OK)
-            return Ok(users);
-        return BadRequest(users);
+        var result = await _service.GetThemeAsync(userId);
+        if (result.Success)
+            return Ok(result);
+
+        return BadRequest(result);
     }
 }

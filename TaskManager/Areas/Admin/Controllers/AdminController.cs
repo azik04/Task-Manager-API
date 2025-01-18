@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Services.Interfaces;
-using TaskManager.ViewModels.RegisterVM;
-using TaskManager.ViewModels.UsersVMs;
+using TaskManager.Core.Dto.Users;
+using TaskManager.Core.Interfaces;
+using TaskManager.DataProvider.Enums;
 
 namespace TaskManager.Areas.Admin.Controllers;
 
@@ -20,14 +20,14 @@ public class AdminController : ControllerBase
 
     [HttpPost("Register")]
     [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> Register(RegisterVM task)
+    public async Task<IActionResult> Register(CreateUserDto task)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var res = await _service.Register(task);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        var res = await _service.Create(task);
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -38,8 +38,8 @@ public class AdminController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> GetAllAdmins()
     {
-        var res = await _service.GetAllAdmins();
-        if (res.StatusCode == Enum.StatusCode.OK)
+        var res = await _service.GetAdmin();
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -50,20 +50,8 @@ public class AdminController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> GetAllUsers()
     {
-        var res = await _service.GetAllUsers();
-        if (res.StatusCode == Enum.StatusCode.OK)
-            return Ok(res);
-
-        return BadRequest(res);
-    }
-
-
-    [HttpGet]
-    [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> GetAll()
-    {
-        var res = await _service.GetAll();
-        if (res.StatusCode == Enum.StatusCode.OK)
+        var res = await _service.GetUser();
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -72,38 +60,26 @@ public class AdminController : ControllerBase
 
     [HttpPut("{id}/ChangeRole")]
     [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> ChangeRole(long id)
+    public async Task<IActionResult> ChangeRole(long id , Role role)
     {
-        var res = await _service.ChangeRole(id);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        var res = await _service.ChangeRole(id, role);
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
     }
 
 
-    [HttpPut("{id}/ChangePassword")]
-    [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> ChangePassword(long id, ChangePasswordVM changePassword)
-    {
-        var res = await _service.ChangePassword(id, changePassword);
-        if (res.StatusCode == Enum.StatusCode.OK)
-            return Ok(res);
+    //[HttpPut("{id}/ChangePassword")]
+    //[Authorize(Policy = "Admin")]
+    //public async Task<IActionResult> ChangePassword(long id, ChangePasswordDto changePassword)
+    //{
+    //    var res = await _service.ChangePassword(id, changePassword);
+    //    if (res.StatusCode == Enum.StatusCode.OK)
+    //        return Ok(res);
 
-        return BadRequest(res);
-    }
-
-
-    [HttpPut("{id}/ChangeEmail")]
-    [Authorize(Policy = "Admin")]
-    public async Task<IActionResult> ChangeEmail(long id, ChangeEmailVM changeEmail)
-    {
-        var res = await _service.ChangeEmail(id, changeEmail);
-        if (res.StatusCode == Enum.StatusCode.OK)
-            return Ok(res);
-
-        return BadRequest(res);
-    }
+    //    return BadRequest(res);
+    //}
 
 
     [HttpDelete("{id}")]
@@ -111,7 +87,7 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> Remove(long id)
     {
         var res = await _service.Remove(id);
-        if (res.StatusCode == Enum.StatusCode.OK)
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);

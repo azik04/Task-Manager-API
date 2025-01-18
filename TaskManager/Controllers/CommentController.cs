@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Services.Interfaces;
-using TaskManager.ViewModels.Comments;
+using TaskManager.Core.Dto.Comment;
+using TaskManager.Core.Interfaces;
 
 namespace TaskManager.Controllers;
 
@@ -22,7 +22,19 @@ public class CommentController : ControllerBase
     public async Task<IActionResult> GetByTask(long taskId)
     {
         var res = await _service.GetByTask(taskId);
-        if (res.StatusCode == TaskManager.Enum.StatusCode.OK)
+        if (res.Success)
+            return Ok(res);
+
+        return BadRequest(res);
+    }
+
+
+    [HttpPut("Task/{taskId}")]
+    [Authorize(Policy = "User")]
+    public async Task<IActionResult> Update(long taskId , UpdateCommentDto dto)
+    {
+        var res = await _service.Update(taskId , dto);
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -34,7 +46,7 @@ public class CommentController : ControllerBase
     public async Task<IActionResult> Remove(long id)
     {
         var res = await _service.Remove(id);
-        if (res.StatusCode == TaskManager.Enum.StatusCode.OK)
+        if (res.Success)
             return Ok(res);
 
         return BadRequest(res);
@@ -43,13 +55,12 @@ public class CommentController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> Create(CreateCommentVM comment)
+    public async Task<IActionResult> Create(CreateCommentDto comment)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
         var res = await _service.Create(comment);
-        return Ok(res);
+        if (res.Success)
+            return Ok(res);
+
+        return BadRequest(res);
     }
 }

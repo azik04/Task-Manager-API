@@ -6,21 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Context\upload\**" />
-    <Compile Remove="Validation\UserTasks\**" />
-    <Content Remove="Context\upload\**" />
-    <Content Remove="Validation\UserTasks\**" />
-    <EmbeddedResource Remove="Context\upload\**" />
-    <EmbeddedResource Remove="Validation\UserTasks\**" />
-    <None Remove="Context\upload\**" />
-    <None Remove="Validation\UserTasks\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="ViewModels\SubTask\GetCoTaskVM.cs" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="MailKit" Version="4.7.1.1" />
@@ -37,6 +22,11 @@
 
 	<ItemGroup>
 	  <Folder Include="wwwroot\uploads\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\TaskManager.Core\TaskManager.Core.csproj" />
+	  <ProjectReference Include="..\TaskManager.DataProvider\TaskManager.DataProvider.csproj" />
 	</ItemGroup>
 
 

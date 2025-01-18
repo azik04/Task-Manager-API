@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.Services.Interfaces;
-using TaskManager.ViewModels.Files;
+using TaskManager.Core.Dto.Files;
+using TaskManager.Core.Interfaces;
 
 namespace TaskManager.Controllers;
 
@@ -18,7 +18,7 @@ public class FileController : ControllerBase
 
     [HttpPost("Upload")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> UploadFile([FromForm] UploadFileVM uploadFile)
+    public async Task<IActionResult> UploadFile([FromForm] CreateFileDto uploadFile)
     {
         if (!ModelState.IsValid)
         {
@@ -27,8 +27,8 @@ public class FileController : ControllerBase
         if (uploadFile.File == null || uploadFile.TaskId <= 0)
             return BadRequest("Invalid file or task ID.");
 
-        var result = await _fileService.UploadFile(uploadFile.File.OpenReadStream(), uploadFile.TaskId, uploadFile.File.FileName);
-        if (result)
+        var result = await _fileService.UploadFile(uploadFile.File.OpenReadStream(), uploadFile);
+        if (result.Success)
             return Ok("File uploaded successfully.");
 
         return StatusCode(StatusCodes.Status500InternalServerError, "Error uploading file.");
@@ -43,8 +43,9 @@ public class FileController : ControllerBase
         if (fileResult == null)
             return NotFound("File not found.");
 
-        return fileResult;
+        return File(fileResult.FileStream, fileResult.ContentType, fileResult.FileDownloadName);
     }
+
 
 
     [HttpDelete("{id}")]
@@ -52,10 +53,10 @@ public class FileController : ControllerBase
     public async Task<IActionResult> DeleteFile(long id)
     {
         var result = await _fileService.DeleteFile(id);
-        if (result)
-            return Ok("File deleted successfully.");
+        if (result.Success)
+            return Ok(result);
 
-        return NotFound("File not found or could not be deleted.");
+        return BadRequest(result);
     }
 
 
@@ -64,6 +65,9 @@ public class FileController : ControllerBase
     public async Task<IActionResult> ListFiles(long taskId)
     {
         var files = await _fileService.ListFilesAsync(taskId);
-        return Ok(files);
+        if (files.Success)
+            return Ok(files);
+
+        return BadRequest(files);
     }
 }
